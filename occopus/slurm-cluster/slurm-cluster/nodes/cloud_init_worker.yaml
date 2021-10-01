@@ -1,0 +1,105 @@
+#cloud-config
+
+users:
+  - default
+  - name: munge
+    uid: 1001
+  - name: slurm
+    uid: 1002
+
+packages:
+  - nfs-common
+  - inotify-tools
+  - ntp
+
+write_files:
+- path: /tmp/install-slurm.sh
+  content: |
+    #!/bin/bash
+
+    set -x
+
+    # Configure NFS
+    mkdir -p /storage
+    chown nobody:nogroup /storage
+    mount {{getip('slurm-master')}}:/storage /storage
+    echo {{getip('slurm-master')}}:/storage /storage nfs auto,timeo=14,intr 0 0 | tee -a /etc/fstab
+
+    # Configure NTP
+    echo "Europe/Budapest" > /etc/timezone
+    ln -fs /usr/share/zoneinfo/`cat /etc/timezone` /etc/localtime
+    dpkg-reconfigure -f noninteractive tzdata
+    echo "server {{getip('slurm-master')}} iburst" >> /etc/ntp.conf
+    sed -i 's/pool 0.ubuntu.pool.ntp.org iburst/#pool 0.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
+    sed -i 's/pool 1.ubuntu.pool.ntp.org iburst/#pool 1.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
+    sed -i 's/pool 2.ubuntu.pool.ntp.org iburst/#pool 2.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
+    sed -i 's/pool 3.ubuntu.pool.ntp.org iburst/#pool 3.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
+    sed -i 's/pool ntp.ubuntu.com/#pool ntp.ubuntu.com/g' /etc/ntp.conf
+    /etc/init.d/ntp restart
+
+    # Install and configure munge
+    apt install -y munge={{variables.mungeversion}}
+    bash /bin/wait-for-file.sh munge.key
+    cp /storage/slurm/munge.key /etc/munge/munge.key
+    chown -R munge: /etc/munge/ /var/log/munge/ /var/lib/munge/ /run/munge/
+    chmod 0700 /etc/munge/ /var/log/munge/ /var/lib/munge/
+    chmod 0755 /run/munge/
+    chmod 0600 /etc/munge/munge.key
+    chown munge /etc/munge/munge.key
+    systemctl enable munge
+    systemctl start munge
+
+    # Install slurm and configure
+    apt install -y slurmd={{variables.slurmversion}}
+    apt install -y slurm-client={{variables.slurmversion}}
+    sed -i 's*PIDFile=/run/slurmd.pid*PIDFile=/run/slurm-llnl/slurmd.pid*g' /lib/systemd/system/slurmd.service
+    mkdir /var/slurm-llnl/ /var/spool/slurmctld /var/spool/slurmd /run/slurm-llnl/
+    chown ubuntu /etc/slurm-llnl/
+    chown slurm:slurm /var/spool/slurmctld /var/spool/slurmd /run/slurm-llnl/ /var/log/slurm-llnl
+    chmod 755 /var/spool/slurmctld /var/spool/slurmd /run/slurm-llnl/ /var/log/slurm-llnl /run/slurm-llnl
+    bash /bin/wait-for-file.sh slurm.conf
+    cp /storage/slurm/slurm.conf /etc/slurm-llnl/slurm.conf
+    echo "$(slurmd -C 2>&1 | head -n 1) NodeAddr=$(hostname -I)" >> /etc/slurm-llnl/slurm.conf
+    cp /etc/slurm-llnl/slurm.conf /storage/slurm/slurm.conf
+    chmod 755 /storage/slurm/slurm.conf
+    chown nobody:nogroup /storage/slurm/slurm.conf
+    bash /bin/wait-for-file.sh cgroup.conf
+    cp /storage/slurm/cgroup.conf /etc/slurm-llnl/cgroup.conf
+    chmod 755 /storage/slurm/cgroup.conf
+    chown nobody:nogroup /storage/slurm/cgroup.conf
+    chown ubuntu /etc/slurm-llnl/slurm.conf /etc/slurm-llnl/cgroup.conf
+    chmod 644 /etc/slurm-llnl/slurm.conf /etc/slurm-llnl/cgroup.conf
+    systemctl restart munge
+    systemctl daemon-reload
+    systemctl enable slurmd
+    systemctl start slurmd
+    echo "* * * * * root bash /bin/slurm-conf-populator.sh" | tee -a /etc/crontab
+  permissions: '755'
+
+- path: /bin/slurm-conf-populator.sh
+  content: |
+    #!/bin/bash
+
+    answer=$(cmp --silent /etc/slurm-llnl/slurm.conf /storage/slurm/slurm.conf || echo "different")
+    if [[ "$answer" =  "different" ]]; then
+      cp /storage/slurm/slurm.conf /etc/slurm-llnl/slurm.conf
+      chown ubuntu /etc/slurm-llnl/slurm.conf
+      chmod 644 /etc/slurm-llnl/slurm.conf
+      systemctl restart munge
+      systemctl daemon-reload
+      systemctl restart slurmd
+    fi
+  permissions: '744'
+
+- path: /bin/wait-for-file.sh
+  content: |
+    #!/bin/bash
+
+    if [ ! -f /storage/slurm/$1 ]; then
+      while read i; do if [ "$i" = $1 ]; then break; fi; done \
+        < <(inotifywait  -e create,open --format '%f' --quiet /storage/slurm --monitor)
+    fi
+  permissions: '755'
+
+runcmd:
+- /tmp/install-slurm.sh

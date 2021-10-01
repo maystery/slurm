@@ -1,0 +1,42 @@
+'node_def:slurm_master_node':
+  -
+    resource:
+      type: nova
+      endpoint: 
+      project_id: 
+      user_domain_name: 
+      image_id: 
+      network_id: 
+      flavor_name: 
+      key_name: 
+      security_groups:
+        - 
+    contextualisation:
+      type: cloudinit
+      context_template: !yaml_import
+        url: file://cloud_init_master.yaml
+    health_check:
+      ports:
+        - 6819
+      timeout: 1200
+
+'node_def:slurm_worker_node':
+  -
+    resource:
+      type: nova
+      endpoint: 
+      project_id: 
+      user_domain_name: 
+      image_id: 
+      network_id: 
+      flavor_name: 
+      key_name: 
+      security_groups:
+        - 
+    contextualisation:
+      type: cloudinit
+      context_template: !yaml_import
+        url: file://cloud_init_worker.yaml
+    health_check:
+      timeout: 1200
+
