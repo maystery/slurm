@@ -11,6 +11,8 @@ packages:
   - mariadb-server
   - ntp
   - nfs-kernel-server
+  - python3-pip
+  - openmpi-bin
 
 write_files:
 - path: /tmp/slurmdbd.conf

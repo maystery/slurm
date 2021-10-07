@@ -22,6 +22,8 @@ packages:
   - git
   - python3-scipy
   - ipython3
+  - python3-pip
+  - openmpi-bin
 
 write_files:
 - path: /tmp/install-slurm.sh

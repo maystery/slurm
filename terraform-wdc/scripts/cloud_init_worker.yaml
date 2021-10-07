@@ -13,6 +13,8 @@ packages:
   - ntp
   - htop
   - mc
+  - python3-pip
+  - openmpi-bin
 
 write_files:
 - path: /tmp/install-slurm.sh

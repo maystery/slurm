@@ -11,6 +11,8 @@ packages:
   - nfs-common
   - inotify-tools
   - ntp
+  - python3-pip
+  - openmpi-bin
 
 write_files:
 - path: /tmp/install-slurm.sh

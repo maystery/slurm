@@ -13,6 +13,8 @@ packages:
   - nfs-kernel-server
   - htop
   - mc
+  - python3-pip
+  - openmpi-bin
 
 write_files:
 - path: /tmp/slurmdbd.conf
