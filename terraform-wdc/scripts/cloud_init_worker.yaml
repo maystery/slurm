@@ -36,7 +36,7 @@ write_files:
     echo "Europe/Budapest" > /etc/timezone
     ln -fs /usr/share/zoneinfo/`cat /etc/timezone` /etc/localtime
     dpkg-reconfigure -f noninteractive tzdata
-    echo "server 0.hu.pool.ntp.org iburst" >> /etc/ntp.conf
+    echo "pool time.kfki.hu iburst" >> /etc/ntp.conf
     sed -i 's/pool 0.ubuntu.pool.ntp.org iburst/# pool 0.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
     sed -i 's/pool 1.ubuntu.pool.ntp.org iburst/# pool 1.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
     sed -i 's/pool 2.ubuntu.pool.ntp.org iburst/# pool 2.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf

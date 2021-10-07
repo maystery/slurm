@@ -2,15 +2,15 @@
   -
     resource:
       type: nova
-      endpoint: 
-      project_id: 
-      user_domain_name: 
-      image_id: 
-      network_id: 
-      flavor_name: 
-      key_name: 
+      endpoint: https://cloud.hbit.sztaki.hu:5000/v3
+      project_id: 14550adef58e4b1bae764520a48aa27b
+      user_domain_name: Default
+      image_id: 72d56cf7-04da-4532-bf27-9047cdbee3f5
+      network_id: 650f386b-3bd8-4586-a437-696a514ddddc
+      flavor_name: cf0f1cb2-43f5-4d36-99d0-8ca2e4380517
+      key_name: emodi
       security_groups:
-        - 
+        - all-open
     contextualisation:
       type: cloudinit
       context_template: !yaml_import
@@ -24,15 +24,15 @@
   -
     resource:
       type: nova
-      endpoint: 
-      project_id: 
-      user_domain_name: 
-      image_id: 
-      network_id: 
-      flavor_name: 
-      key_name: 
+      endpoint: https://cloud.hbit.sztaki.hu:5000/v3
+      project_id: 14550adef58e4b1bae764520a48aa27b
+      user_domain_name: Default
+      image_id: 72d56cf7-04da-4532-bf27-9047cdbee3f5
+      network_id: 650f386b-3bd8-4586-a437-696a514ddddc
+      flavor_name: cf0f1cb2-43f5-4d36-99d0-8ca2e4380517
+      key_name: emodi
       security_groups:
-        - 
+        - all-open
     contextualisation:
       type: cloudinit
       context_template: !yaml_import

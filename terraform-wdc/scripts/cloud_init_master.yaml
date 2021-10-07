@@ -11,6 +11,8 @@ packages:
   - mariadb-server
   - ntp
   - nfs-kernel-server
+  - htop
+  - mc
 
 write_files:
 - path: /tmp/slurmdbd.conf
@@ -130,7 +132,7 @@ write_files:
     echo "Europe/Budapest" > /etc/timezone
     ln -fs /usr/share/zoneinfo/`cat /etc/timezone` /etc/localtime
     dpkg-reconfigure -f noninteractive tzdata
-    echo "server 0.hu.pool.ntp.org iburst" >> /etc/ntp.conf
+    echo "pool time.kfki.hu iburst" >> /etc/ntp.conf
     sed -i 's/pool 0.ubuntu.pool.ntp.org iburst/# pool 0.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
     sed -i 's/pool 1.ubuntu.pool.ntp.org iburst/# pool 1.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
     sed -i 's/pool 2.ubuntu.pool.ntp.org iburst/# pool 2.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
@@ -139,7 +141,7 @@ write_files:
     systemctl restart ntp
 
     # Install munge and configure munge
-    apt install -y munge={{variables.mungeversion}}
+    apt install -y munge=0.5.13-2build1
     cp /etc/munge/munge.key /storage/slurm/munge.key
     chmod 755 /storage/slurm/munge.key
     chown nobody:nogroup /storage/slurm/munge.key
@@ -162,8 +164,8 @@ write_files:
     mysql -u root -e "flush privileges;"
 
     # Install slurm and configure slurm
-    apt install -y slurmdbd={{variables.slurmversion}}
-    apt install -y slurmctld={{variables.slurmversion}}
+    apt install -y slurmdbd=19.05.5-1
+    apt install -y slurmctld=19.05.5-1
     chown ubuntu /etc/slurm-llnl/
     mkdir /var/spool/slurmctld /var/spool/slurmd
     chown slurm:slurm /var/spool/slurmctld /var/spool/slurmd
@@ -171,6 +173,7 @@ write_files:
     mkdir /run/slurm-llnl
     chown slurm:slurm /var/log/slurm-llnl /run/slurm-llnl
     chmod 755 /var/log/slurm-llnl /var/run/slurm-llnl
+    # SlurmDBD config file
     chown ubuntu:ubuntu /tmp/slurmdbd.conf
     cp /tmp/slurmdbd.conf /etc/slurm-llnl/slurmdbd.conf
     chown ubuntu /etc/slurm-llnl/slurmdbd.conf
@@ -179,6 +182,7 @@ write_files:
     sed -i 's*PIDFile=/run/slurmctld.pid*PIDFile=/run/slurm-llnl/slurmctld.pid*g' /lib/systemd/system/slurmctld.service
     HOSTNAME=$(hostname | awk {'print $1'})
     IP=$(hostname -I | awk {'print $1'})
+    # Slurm config file
     sed -i s/HOSTNAME/${HOSTNAME}/g /tmp/slurm.conf
     sed -i s/IP/${IP}/g /tmp/slurm.conf
     chown ubuntu:ubuntu /tmp/slurm.conf
