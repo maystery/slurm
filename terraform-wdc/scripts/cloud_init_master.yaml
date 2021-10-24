@@ -13,8 +13,6 @@ packages:
   - nfs-kernel-server
   - htop
   - mc
-  - python3-pip
-  - openmpi-bin
 
 write_files:
 - path: /tmp/slurmdbd.conf
@@ -122,11 +120,8 @@ write_files:
     set -x
 
     # Install NFS
-    mkdir -p /storage
-    chown nobody:nogroup /storage
-    mkdir /storage/slurm
-    chown nobody:nogroup /storage/slurm
-    chmod 755 /storage/slurm
+    mkdir -p /storage/slurm
+    chown -R ubuntu:ubuntu /storage
     echo "/storage *(rw,sync,no_subtree_check)" >> /etc/exports
     systemctl restart nfs-kernel-server
 
@@ -134,7 +129,7 @@ write_files:
     echo "Europe/Budapest" > /etc/timezone
     ln -fs /usr/share/zoneinfo/`cat /etc/timezone` /etc/localtime
     dpkg-reconfigure -f noninteractive tzdata
-    echo "pool time.kfki.hu iburst" >> /etc/ntp.conf
+    echo "server time.kfki.hu iburst" >> /etc/ntp.conf
     sed -i 's/pool 0.ubuntu.pool.ntp.org iburst/# pool 0.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
     sed -i 's/pool 1.ubuntu.pool.ntp.org iburst/# pool 1.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
     sed -i 's/pool 2.ubuntu.pool.ntp.org iburst/# pool 2.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
@@ -146,7 +141,6 @@ write_files:
     apt install -y munge=0.5.13-2build1
     cp /etc/munge/munge.key /storage/slurm/munge.key
     chmod 755 /storage/slurm/munge.key
-    chown nobody:nogroup /storage/slurm/munge.key
     chown -R munge: /etc/munge/ /var/log/munge/ /var/lib/munge/ /run/munge/
     chmod 0700 /etc/munge/ /var/log/munge/ /var/lib/munge/
     chmod 0755 /run/munge/
@@ -191,14 +185,14 @@ write_files:
     cp /tmp/slurm.conf /etc/slurm-llnl/slurm.conf
     cp /etc/slurm-llnl/slurm.conf /storage/slurm/slurm.conf
     chmod 755 /storage/slurm/slurm.conf
-    chown nobody:nogroup /storage/slurm/slurm.conf
+    chown ubuntu:ubuntu /storage/slurm/slurm.conf
     chmod 644 /etc/slurm-llnl/slurm.conf
     # Cgroup file
     chown ubuntu:ubuntu /tmp/cgroup.conf
     cp /tmp/cgroup.conf /etc/slurm-llnl/cgroup.conf
     cp /etc/slurm-llnl/cgroup.conf /storage/slurm/cgroup.conf
     chmod 755 /storage/slurm/cgroup.conf
-    chown nobody:nogroup /storage/slurm/cgroup.conf
+    chown ubuntu:ubuntu /storage/slurm/cgroup.conf
     chown ubuntu /etc/slurm-llnl/cgroup.conf
     chmod 644 /etc/slurm-llnl/cgroup.conf
     systemctl daemon-reload
@@ -206,7 +200,9 @@ write_files:
     systemctl start slurmdbd
     # TODO
     sleep 20
-    sacctmgr add cluster compute-cluster -i
+    sacctmgr add -i cluster compute-cluster
+    sacctmgr add -i account ubuntu
+    sacctmgr add -i user ubuntu DefaultAccount=ubuntu
     systemctl enable slurmctld
     echo "* * * * * root bash /bin/slurm-conf-populator.sh" | tee -a /etc/crontab
     echo "* * * * * root bash /bin/slurm-scale-down.sh" | tee -a /etc/crontab
@@ -244,13 +240,13 @@ write_files:
 
     echo "####"
     date
-    WORKARR=(`sinfo -dh|col6`)
+    WORKARR=(`sinfo -dh | col6 | sed 's/,/ /'`)
     for i in ${!WORKARR[@]}
       do
         date
         echo "##REMOVE FROM THE CLUSTER: ${WORKARR[i]} ##"
-        grep -v "${WORKARR[i]}" /storage/slurm/slurm.conf > /storage/slurm/slurm2.conf
-        mv /storage/slurm/slurm2.conf /storage/slurm/slurm.conf
+        su - ubuntu -c "grep -v "${WORKARR[i]}" /storage/slurm/slurm.conf > /storage/slurm/slurm2.conf"
+        su - ubuntu -c "mv /storage/slurm/slurm2.conf /storage/slurm/slurm.conf"
       done
     echo "####"
   permissions: '744'

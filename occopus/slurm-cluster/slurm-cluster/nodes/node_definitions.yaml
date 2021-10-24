@@ -6,11 +6,14 @@
       project_id: 14550adef58e4b1bae764520a48aa27b
       user_domain_name: Default
       image_id: 72d56cf7-04da-4532-bf27-9047cdbee3f5
-      network_id: 650f386b-3bd8-4586-a437-696a514ddddc
+      network_id: 5a72d636-b32d-4d38-b16b-9eb75d767592
       flavor_name: cf0f1cb2-43f5-4d36-99d0-8ca2e4380517
+      server_name: slurm-master-{{cut(node_id,0,7)}}
       key_name: emodi
+      floating_ip: yes
       security_groups:
-        - all-open
+        - local-all
+        - default
     contextualisation:
       type: cloudinit
       context_template: !yaml_import
@@ -28,11 +31,13 @@
       project_id: 14550adef58e4b1bae764520a48aa27b
       user_domain_name: Default
       image_id: 72d56cf7-04da-4532-bf27-9047cdbee3f5
-      network_id: 650f386b-3bd8-4586-a437-696a514ddddc
+      network_id: 5a72d636-b32d-4d38-b16b-9eb75d767592
       flavor_name: cf0f1cb2-43f5-4d36-99d0-8ca2e4380517
+      server_name: slurm-worker-{{cut(node_id,0,7)}}
       key_name: emodi
       security_groups:
-        - all-open
+        - local-all
+        - default
     contextualisation:
       type: cloudinit
       context_template: !yaml_import

@@ -1,18 +1,20 @@
 # cloud
-tenant_name = "lpds"
-auth_url = "https://cloud.hbit.sztaki.hu:5000/v3"
+tenant_id                  = "6d11cf70249747a393dbf3184e50980a"
+auth_url                   = "https://sztaki.science-cloud.hu:5000"
 
 
 # master
-master_image_id = "72d56cf7-04da-4532-bf27-9047cdbee3f5"
-master_flavor_id = "cf0f1cb2-43f5-4d36-99d0-8ca2e4380517"
-master_key_pair = "emodi"
-master_security_groups = ["local-all","ssh", "default"]
-master_network_name = "lpds_net"
+master_image_id            = "8b693880-6273-44b0-91ab-f0e9403dff69"
+master_flavor_name         = "m2.medium"
+master_key_pair            = "emodi"
+master_security_groups     = ["local-all","ssh", "default"]
+master_network_name        = "default"
 
 # worker
-worker_image_id = "72d56cf7-04da-4532-bf27-9047cdbee3f5"
-worker_flavor_id = "cf0f1cb2-43f5-4d36-99d0-8ca2e4380517"
-worker_key_pair = "emodi"
-worker_security_groups = ["all-open"]
-worker_network_name = "lpds_net"
+worker_image_id            = "8b693880-6273-44b0-91ab-f0e9403dff69"
+worker_flavor_name         = "m2.medium"
+worker_key_pair            = "emodi"
+worker_security_groups     = ["local-all"]
+worker_network_name        = "default"
+volume_os_size             = 20
+worker_count               = 5
