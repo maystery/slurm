@@ -7,6 +7,14 @@ users:
   - name: slurm
     uid: 1002
 
+timezone: Europa/Budapest
+
+ntp:
+  enabled: true
+  ntp_client: chrony
+  servers:
+    - 0.hu.pool.ntp.org
+
 packages:
   - nfs-common
   - inotify-tools
@@ -18,18 +26,6 @@ write_files:
     #!/bin/bash
 
     set -x
-
-    # Configure NTP
-    echo "Europe/Budapest" > /etc/timezone
-    ln -fs /usr/share/zoneinfo/`cat /etc/timezone` /etc/localtime
-    dpkg-reconfigure -f noninteractive tzdata
-    echo "server 0.hu.pool.ntp.org iburst" >> /etc/ntp.conf
-    sed -i 's/pool 0.ubuntu.pool.ntp.org iburst/# pool 0.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
-    sed -i 's/pool 1.ubuntu.pool.ntp.org iburst/# pool 1.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
-    sed -i 's/pool 2.ubuntu.pool.ntp.org iburst/# pool 2.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
-    sed -i 's/pool 3.ubuntu.pool.ntp.org iburst/# pool 3.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
-    sed -i 's/pool ntp.ubuntu.com/# pool ntp.ubuntu.com/g' /etc/ntp.conf
-    systemctl restart ntp
 
     # Configure NFS
     mkdir -p /storage

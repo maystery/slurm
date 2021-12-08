@@ -7,6 +7,14 @@ users:
   - name: slurm
     uid: 1002
 
+timezone: Europa/Budapest
+
+ntp:
+  enabled: true
+  ntp_client: chrony
+  servers:
+    - time.kfki.hu
+
 packages:
   - nfs-common
   - inotify-tools
@@ -39,18 +47,6 @@ write_files:
     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/usr/bin/clang++
     make -j4 boostTester fewer_scripts compileTests cpypyqed
     chown -R ubuntu:ubuntu /home/ubuntu/cppqed
-
-    # Configure NTP
-    echo "Europe/Budapest" > /etc/timezone
-    ln -fs /usr/share/zoneinfo/`cat /etc/timezone` /etc/localtime
-    dpkg-reconfigure -f noninteractive tzdata
-    echo "server time.kfki.hu iburst" >> /etc/ntp.conf
-    sed -i 's/pool 0.ubuntu.pool.ntp.org iburst/# pool 0.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
-    sed -i 's/pool 1.ubuntu.pool.ntp.org iburst/# pool 1.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
-    sed -i 's/pool 2.ubuntu.pool.ntp.org iburst/# pool 2.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
-    sed -i 's/pool 3.ubuntu.pool.ntp.org iburst/# pool 3.ubuntu.pool.ntp.org iburst/g' /etc/ntp.conf
-    sed -i 's/pool ntp.ubuntu.com/# pool ntp.ubuntu.com/g' /etc/ntp.conf
-    systemctl restart ntp
 
     # Wait for slurm master port
     while ! nc -z ${master_ip} 6819 ; do

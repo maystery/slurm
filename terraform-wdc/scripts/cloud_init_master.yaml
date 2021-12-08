@@ -6,6 +6,14 @@ users:
   - name: slurm
     uid: 1002
 
+timezone: Europa/Budapest
+
+ntp:
+  enabled: true
+  ntp_client: chrony
+  servers:
+    - time.kfki.hu
+
 packages:
   - libmysqlclient-dev
   - mariadb-server

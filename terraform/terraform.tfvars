@@ -17,4 +17,4 @@ worker_key_pair            = "emodi"
 worker_security_groups     = ["local-all"]
 worker_network_name        = "default"
 volume_os_size             = 20
-worker_count               = 5
+worker_count               = 2

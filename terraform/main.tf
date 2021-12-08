@@ -18,7 +18,6 @@ provider "openstack" {
 # resource specific configuration
 resource "openstack_compute_instance_v2" "slurm-master" {
   name            = "slurm-master"
-  image_id        = var.master_image_id
   flavor_name     = var.master_flavor_name
   key_pair        = var.master_key_pair
   security_groups = var.master_security_groups
@@ -34,7 +33,6 @@ resource "openstack_compute_instance_v2" "slurm-master" {
     volume_size           = var.volume_os_size
   }
 
-
   network {
     name = var.master_network_name
   }
@@ -44,7 +42,6 @@ resource "openstack_compute_instance_v2" "slurm-master" {
 resource "openstack_compute_instance_v2" "slurm-worker" {
   count           = var.worker_count
   name            = "slurm-worker-cpu-compute-${element(random_pet.slurm_name.*.id, count.index)}"
-  image_id        = var.worker_image_id
   flavor_name     = var.worker_flavor_name
   key_pair        = var.worker_key_pair
   security_groups = var.worker_security_groups
@@ -61,7 +58,6 @@ resource "openstack_compute_instance_v2" "slurm-worker" {
     delete_on_termination = true
     volume_size           = var.volume_os_size
   }
-
 
   network {
     name = var.worker_network_name
